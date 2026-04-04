@@ -34,3 +34,8 @@ def test_import_judge():
 def test_import_ui():
     from src.ui.app import main
     assert callable(main)
+
+
+def test_import_review():
+    from review import app
+    assert app is not None
