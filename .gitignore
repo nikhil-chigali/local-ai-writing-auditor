@@ -12,6 +12,12 @@ wheels/
 # Environment — never commit real keys
 .env
 
+# Gold dataset JSONs (large; committed separately or via DVC)
+data/gold_dataset/*.json
+
+# Streamlit cache
+.streamlit/
+
 # Project meta files (not part of the codebase)
 CLAUDE.md
 scope.md
