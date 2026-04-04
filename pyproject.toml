@@ -17,3 +17,8 @@ dependencies = [
     "rich",
     "scikit-learn",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
