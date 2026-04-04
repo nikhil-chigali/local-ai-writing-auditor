@@ -1,0 +1,26 @@
+[project]
+name = "local-ai-writing-auditor"
+version = "0.1.0"
+description = "Privacy-first Ollama-powered agentic pipeline to detect and rewrite AI writing tells"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "ollama",
+    "instructor",
+    "pydantic>=2.0",
+    "pydantic-settings",
+    "langfuse",
+    "loguru",
+    "streamlit",
+    "typer",
+    "pandas",
+    "rich",
+    "scikit-learn",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/local_ai_writing_auditor"]
