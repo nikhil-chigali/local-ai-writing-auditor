@@ -29,3 +29,8 @@ def test_import_metrics():
 def test_import_judge():
     from src.eval.judge import LLMJudge
     assert LLMJudge is not None
+
+
+def test_import_ui():
+    from src.ui.app import main
+    assert callable(main)
