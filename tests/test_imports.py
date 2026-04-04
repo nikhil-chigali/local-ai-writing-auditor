@@ -19,3 +19,13 @@ def test_import_auditor():
 def test_import_rewriter():
     from src.agents.rewriter import RewriterAgent, RewriteResult, RewriteReport
     assert RewriterAgent is not None
+
+
+def test_import_metrics():
+    from src.eval.metrics import compute_metrics
+    assert callable(compute_metrics)
+
+
+def test_import_judge():
+    from src.eval.judge import LLMJudge
+    assert LLMJudge is not None
