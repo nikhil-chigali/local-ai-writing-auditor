@@ -9,3 +9,13 @@ def test_import_taxonomy():
     assert isinstance(TIER_2, list)
     assert isinstance(TIER_3, list)
     assert isinstance(PATTERNS, dict)
+
+
+def test_import_auditor():
+    from src.agents.auditor import AuditorAgent, AuditReport, FlaggedSentence
+    assert AuditorAgent is not None
+
+
+def test_import_rewriter():
+    from src.agents.rewriter import RewriterAgent, RewriteResult, RewriteReport
+    assert RewriterAgent is not None
