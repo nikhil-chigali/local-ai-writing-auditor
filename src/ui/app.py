@@ -71,7 +71,6 @@ def main() -> None:
 
         with col_right:
             flagged_placeholder.empty()
-            st.subheader("Flagged Sentences")
             st.caption(
                 f"Verdict: **{audit_report.verdict}** · {audit_report.flag_count} flags · {audit_report.category_count} categories"
             )
