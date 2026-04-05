@@ -1,3 +1,5 @@
+import re
+
 from config.settings import settings
 from config.taxonomy import TIER_1, TIER_2, TIER_3
 from src.agents.auditor import LexicalSummary, LexicalWordReport, SentenceHit
@@ -40,11 +42,17 @@ class PythonLexicalDetector:
             sentence_hits=list(merged.values()),
         )
 
+    def _matches(self, word: str, text_lower: str) -> bool:
+        """Match word/phrase in text. Uses word boundaries for single words."""
+        if " " in word:
+            return word.lower() in text_lower
+        return bool(re.search(r"\b" + re.escape(word.lower()) + r"\b", text_lower))
+
     def _scan_tier1(self, sentences: dict[str, str]) -> list[SentenceHit]:
         hits = []
         for sid, text in sentences.items():
             text_lower = text.lower()
-            matched = [w for w in TIER_1 if w.lower() in text_lower]
+            matched = [w for w in TIER_1 if self._matches(w, text_lower)]
             if matched:
                 hits.append(SentenceHit(
                     sentence_id=sid, text=text, matched_words=matched, tier=1
@@ -64,11 +72,11 @@ class PythonLexicalDetector:
             for sid in para_ids:
                 text_lower = sentences.get(sid, "").lower()
                 for word in TIER_2:
-                    if word.lower() in text_lower:
+                    if self._matches(word, text_lower):
                         para_matches.append((sid, word))
 
             if len(para_matches) >= settings.tier2_cluster_threshold:
-                clusters.append([w for _, w in para_matches])
+                clusters.append(list(dict.fromkeys(w for _, w in para_matches)))
 
                 by_sentence: dict[str, list[str]] = {}
                 for sid, word in para_matches:
@@ -77,7 +85,7 @@ class PythonLexicalDetector:
                 for sid, words in by_sentence.items():
                     sentence_hits.append(SentenceHit(
                         sentence_id=sid,
-                        text=sentences[sid],
+                        text=sentences.get(sid, ""),
                         matched_words=words,
                         tier=2,
                     ))
