@@ -5,7 +5,7 @@ from langfuse import observe
 from openai import OpenAI
 from pydantic import BaseModel
 
-from src.agents.auditor import SubAgentFinding, SubAgentReport
+from src.schemas import SubAgentFinding, SubAgentReport
 
 
 class _FindingsList(BaseModel):

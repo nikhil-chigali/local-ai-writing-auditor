@@ -66,12 +66,20 @@ def test_import_detectors_llm_rhythmic():
     assert LLMRhythmicAgent is not None
 
 
-def test_import_new_auditor_schemas():
-    from src.agents.auditor import (
+def test_import_schemas_package():
+    from src.schemas import (
         SentenceHit,
         LexicalSummary,
         LexicalWordReport,
         SubAgentFinding,
         SubAgentReport,
+        FlaggedSentence,
+        AuditReport,
+        RewriteResult,
+        RewriteReport,
     )
-    assert all([SentenceHit, LexicalSummary, LexicalWordReport, SubAgentFinding, SubAgentReport])
+    assert all([
+        SentenceHit, LexicalSummary, LexicalWordReport,
+        SubAgentFinding, SubAgentReport, FlaggedSentence,
+        AuditReport, RewriteResult, RewriteReport,
+    ])
