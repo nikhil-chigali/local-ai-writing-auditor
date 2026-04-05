@@ -22,3 +22,8 @@ data/gold_dataset/*.json
 CLAUDE.md
 scope.md
 docs/superpowers/
+.claude/
+.vscode/
+
+# Git worktrees
+.worktrees/
