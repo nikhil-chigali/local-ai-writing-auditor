@@ -1,5 +1,6 @@
 import instructor
 from langfuse import observe
+from loguru import logger
 from openai import OpenAI
 from pydantic import BaseModel
 
@@ -36,11 +37,11 @@ class RewriterAgent:
 
     def __init__(self, model: str) -> None:
         self.model = model
-
-    def _call_llm(self, sentence: FlaggedSentence) -> RewriteResult:
-        client = instructor.from_openai(
+        self.client = instructor.from_openai(
             OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
         )
+
+    def _call_llm(self, sentence: FlaggedSentence) -> RewriteResult:
         active_labels = {k: v for k, v in sentence.labels.items() if v}
         suggested_fix = " | ".join(
             f"{cat}: {fix}" for cat, fix in sentence.suggested_fixes.items()
@@ -52,7 +53,7 @@ class RewriterAgent:
             suggested_fix=suggested_fix,
             sentence_id=sentence.sentence_id,
         )
-        wrapper = client.chat.completions.create(
+        wrapper = self.client.chat.completions.create(
             model=self.model,
             response_model=_RewriteResultWrapper,
             messages=[{"role": "user", "content": prompt}],
@@ -92,6 +93,14 @@ class RewriterAgent:
         rewritten_text = original_text
         for rewrite in rewrites:
             rewritten_text = rewritten_text.replace(rewrite.original, rewrite.rewritten, 1)
+
+        for rewrite in rewrites:
+            if rewrite.original not in original_text:
+                logger.warning(
+                    "Rewrite original not found in text — substitution skipped: sentence_id={} original={!r}",
+                    rewrite.sentence_id,
+                    rewrite.original,
+                )
 
         return RewriteReport(
             article_id=article_id,

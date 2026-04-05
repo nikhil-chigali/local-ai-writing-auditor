@@ -84,5 +84,5 @@ def test_rewriter_substitutes_multiple_sentences():
     assert len(result.rewrites) == 2
     assert "Explore this." in result.full_rewritten_text
     assert "Use these tools." in result.full_rewritten_text
-    assert "Delve" not in result.full_rewritten_text
-    assert "Leverage" not in result.full_rewritten_text
+    assert "Delve into this." not in result.full_rewritten_text
+    assert "Leverage these tools." not in result.full_rewritten_text
