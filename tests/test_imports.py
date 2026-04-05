@@ -88,3 +88,8 @@ def test_import_schemas_package():
 def test_import_review_cli():
     from review import review as review_cmd
     assert callable(review_cmd)
+
+
+def test_import_ui_app():
+    from src.ui.app import main
+    assert callable(main)
