@@ -4,6 +4,7 @@ import streamlit as st
 
 
 def _article_id(text: str) -> str:
+    """Stable short ID derived from content (no filename available in UI context)."""
     return hashlib.md5(text.encode()).hexdigest()[:8]
 
 
