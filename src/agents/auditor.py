@@ -80,12 +80,12 @@ class AuditorAgent:
         global_idx = 0
 
         for para in raw_paragraphs:
-            raw_sents = re.split(r"(?<=[.!?])\s+", para.strip())
+            raw_sents = re.split(r"(?<=[.!?])\s+(?=[A-Z])", para.strip())
             raw_sents = [s.strip() for s in raw_sents if s.strip()]
 
             para_ids: list[str] = []
             for sent in raw_sents:
-                sid = f"{article_id}_s{str(global_idx).zfill(2)}"
+                sid = f"{article_id}_s{str(global_idx).zfill(3)}"
                 sentences[sid] = sent
                 para_ids.append(sid)
                 global_idx += 1

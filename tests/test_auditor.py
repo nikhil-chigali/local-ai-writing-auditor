@@ -5,10 +5,10 @@ def test_preprocess_assigns_stable_sentence_ids():
     agent = AuditorAgent(model="mistral")
     text = "First sentence. Second sentence. Third sentence."
     sentences, paragraphs = agent._preprocess(text, "art_001")
-    assert "art_001_s00" in sentences
-    assert "art_001_s01" in sentences
-    assert "art_001_s02" in sentences
-    assert sentences["art_001_s00"] == "First sentence."
+    assert "art_001_s000" in sentences
+    assert "art_001_s001" in sentences
+    assert "art_001_s002" in sentences
+    assert sentences["art_001_s000"] == "First sentence."
 
 
 def test_preprocess_groups_sentences_by_paragraph():
@@ -26,14 +26,14 @@ def test_preprocess_handles_single_sentence():
     sentences, paragraphs = agent._preprocess(text, "art_001")
     assert len(sentences) == 1
     assert len(paragraphs) == 1
-    assert paragraphs[0] == ["art_001_s00"]
+    assert paragraphs[0] == ["art_001_s000"]
 
 
 def test_preprocess_ids_are_globally_sequential_across_paragraphs():
     agent = AuditorAgent(model="mistral")
     text = "First.\n\nSecond. Third."
     sentences, paragraphs = agent._preprocess(text, "art_001")
-    # Para 1: s00; Para 2: s01, s02 — IDs do not reset per paragraph
-    assert "art_001_s00" in paragraphs[0]
-    assert "art_001_s01" in paragraphs[1]
-    assert "art_001_s02" in paragraphs[1]
+    # Para 1: s000; Para 2: s001, s002 — IDs do not reset per paragraph
+    assert "art_001_s000" in paragraphs[0]
+    assert "art_001_s001" in paragraphs[1]
+    assert "art_001_s002" in paragraphs[1]
