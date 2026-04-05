@@ -1,3 +1,4 @@
+import re
 from typing import Literal
 
 from langfuse import observe
@@ -60,6 +61,39 @@ class AuditorAgent:
 
     def __init__(self, model: str) -> None:
         self.model = model
+
+    def _preprocess(
+        self, text: str, article_id: str
+    ) -> tuple[dict[str, str], list[list[str]]]:
+        """Split article into sentences with stable IDs, grouped by paragraph.
+
+        Returns:
+            sentences: {sentence_id: sentence_text}
+            paragraphs: [[sentence_id, ...], ...] — one list per paragraph
+        """
+        raw_paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+        if not raw_paragraphs:
+            raw_paragraphs = [text.strip()]
+
+        sentences: dict[str, str] = {}
+        paragraphs: list[list[str]] = []
+        global_idx = 0
+
+        for para in raw_paragraphs:
+            raw_sents = re.split(r"(?<=[.!?])\s+", para.strip())
+            raw_sents = [s.strip() for s in raw_sents if s.strip()]
+
+            para_ids: list[str] = []
+            for sent in raw_sents:
+                sid = f"{article_id}_s{str(global_idx).zfill(2)}"
+                sentences[sid] = sent
+                para_ids.append(sid)
+                global_idx += 1
+
+            if para_ids:
+                paragraphs.append(para_ids)
+
+        return sentences, paragraphs
 
     @observe()
     def run(self, text: str, article_id: str) -> AuditReport:
