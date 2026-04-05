@@ -34,6 +34,7 @@ Sentences to analyze (sentence_id → text):
 
 Return findings ONLY for sentences that clearly exhibit these patterns.
 If no patterns are found, return an empty findings list.
+For severity: "high" = clear violation, "medium" = likely violation, "low" = possible.
 """
 
 

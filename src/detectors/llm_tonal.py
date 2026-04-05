@@ -25,9 +25,11 @@ Detect ONLY these four patterns:
    Examples: "Great question!", "Certainly!", "Absolutely!", "That's a fascinating point",
    "Excellent observation!".
 
-3. FORCED VARIATION: Cycling through synonyms within a paragraph to avoid repeating the clearest word.
-   Example: "developers... engineers... practitioners... builders" — all meaning the same thing.
-   Human writers repeat the clearest word. AI rotates synonyms.
+3. FORCED VARIATION: The writer's voice lacks a settled identity — verb choices, tone descriptors,
+   and attributive phrases shift unnaturally within the same passage. Unlike synonym rotation (a
+   lexical pattern about nouns), this is about tonal inconsistency: one sentence is formal, the next
+   is casual; one uses active voice confidently, the next hedges. The overall effect is a voice that
+   feels assembled rather than authored.
 
 4. RELENTLESSLY NEUTRAL VOICE: Text that aggressively avoids all opinion, preference, or stance.
    Flag only when the piece clearly calls for voice (personal essay, opinion piece, blog post with
@@ -40,6 +42,7 @@ Sentences to analyze (sentence_id → text):
 
 Return findings ONLY for sentences that clearly exhibit these patterns.
 If no patterns are found, return an empty findings list.
+For severity: "high" = clear violation, "medium" = likely violation, "low" = possible.
 """
 
 
