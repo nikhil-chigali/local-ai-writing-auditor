@@ -39,3 +39,39 @@ def test_import_ui():
 def test_import_review():
     from review import app
     assert app is not None
+
+
+def test_import_detectors_lexical():
+    from src.detectors.lexical import PythonLexicalDetector
+    assert PythonLexicalDetector is not None
+
+
+def test_import_detectors_llm_lexical():
+    from src.detectors.llm_lexical import LLMLexicalAgent
+    assert LLMLexicalAgent is not None
+
+
+def test_import_detectors_llm_structural():
+    from src.detectors.llm_structural import LLMStructuralAgent
+    assert LLMStructuralAgent is not None
+
+
+def test_import_detectors_llm_tonal():
+    from src.detectors.llm_tonal import LLMTonalAgent
+    assert LLMTonalAgent is not None
+
+
+def test_import_detectors_llm_rhythmic():
+    from src.detectors.llm_rhythmic import LLMRhythmicAgent
+    assert LLMRhythmicAgent is not None
+
+
+def test_import_new_auditor_schemas():
+    from src.agents.auditor import (
+        SentenceHit,
+        LexicalSummary,
+        LexicalWordReport,
+        SubAgentFinding,
+        SubAgentReport,
+    )
+    assert all([SentenceHit, LexicalSummary, LexicalWordReport, SubAgentFinding, SubAgentReport])
