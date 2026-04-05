@@ -1,10 +1,7 @@
-import re
 from typing import Literal
 
 from langfuse import observe
 from pydantic import BaseModel
-
-from config.settings import settings
 
 
 class SentenceHit(BaseModel):
