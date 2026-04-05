@@ -1,3 +1,4 @@
+import enum
 import hashlib
 from pathlib import Path
 from typing import Optional
@@ -6,7 +7,11 @@ import typer
 from rich.console import Console
 from rich.panel import Panel
 from rich.rule import Rule
-from rich.text import Text
+
+class Mode(str, enum.Enum):
+    rewrite = "rewrite"
+    detect_only = "detect-only"
+
 
 app = typer.Typer(
     name="review",
@@ -53,8 +58,8 @@ def _print_what_changed(rewrites) -> None:
 def review(
     file: Path = typer.Option(..., "--file", help="Path to article file (.md or .txt)", exists=True),
     model: str = typer.Option("mistral", "--model", help="Ollama model tag: mistral | llama3.2:3b | phi4"),
-    mode: str = typer.Option(
-        "rewrite",
+    mode: Mode = typer.Option(
+        Mode.rewrite,
         "--mode",
         help="Pipeline mode: 'rewrite' (detect + rewrite, two-pass) or 'detect-only' (audit report only)",
     ),
@@ -78,7 +83,7 @@ def review(
     console.print(f"Verdict: [bold]{audit_report.verdict}[/bold]  |  {audit_report.flag_count} flags  |  {audit_report.category_count} categories\n")
     _print_issues(audit_report.flagged_sentences)
 
-    if mode == "detect-only":
+    if mode == Mode.detect_only:
         if output_json:
             output_json.write_text(audit_report.model_dump_json(indent=2), encoding="utf-8")
             console.print(f"\n[dim]Report written to {output_json}[/dim]")
