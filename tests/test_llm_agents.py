@@ -1,5 +1,5 @@
 from unittest.mock import patch
-from src.agents.auditor import SubAgentFinding, SubAgentReport
+from src.schemas import SubAgentFinding, SubAgentReport
 
 
 def test_llm_lexical_agent_returns_sub_agent_report():

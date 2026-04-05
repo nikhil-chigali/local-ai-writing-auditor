@@ -2,7 +2,7 @@ import re
 
 from config.settings import settings
 from config.taxonomy import TIER_1, TIER_2, TIER_3
-from src.agents.auditor import LexicalSummary, LexicalWordReport, SentenceHit
+from src.schemas import LexicalSummary, LexicalWordReport, SentenceHit
 
 
 class PythonLexicalDetector:

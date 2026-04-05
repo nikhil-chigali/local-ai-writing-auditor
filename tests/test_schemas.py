@@ -1,5 +1,5 @@
 def test_flagged_sentence_schema():
-    from src.agents.auditor import FlaggedSentence
+    from src.schemas import FlaggedSentence
     s = FlaggedSentence(
         sentence_id="test_001_s01",
         text="Delve into the nuanced landscape.",
@@ -13,7 +13,7 @@ def test_flagged_sentence_schema():
 
 
 def test_audit_report_schema():
-    from src.agents.auditor import AuditReport, LexicalSummary
+    from src.schemas import AuditReport, LexicalSummary
     report = AuditReport(
         article_id="test_001",
         model="mistral",
@@ -33,7 +33,7 @@ def test_audit_report_schema():
 
 
 def test_sub_agent_report_schema():
-    from src.agents.auditor import SubAgentReport, SubAgentFinding
+    from src.schemas import SubAgentReport, SubAgentFinding
     report = SubAgentReport(
         category="lexical",
         findings=[
@@ -51,7 +51,7 @@ def test_sub_agent_report_schema():
 
 
 def test_lexical_word_report_schema():
-    from src.agents.auditor import LexicalWordReport, LexicalSummary, SentenceHit
+    from src.schemas import LexicalWordReport, LexicalSummary, SentenceHit
     report = LexicalWordReport(
         lexical_summary=LexicalSummary(
             tier_1_hits=["delve"],
@@ -72,7 +72,7 @@ def test_lexical_word_report_schema():
 
 
 def test_rewrite_result_schema():
-    from src.agents.rewriter import RewriteResult
+    from src.schemas import RewriteResult
     r = RewriteResult(
         sentence_id="test_001_s01",
         original="Delve into the nuanced landscape.",
@@ -83,7 +83,7 @@ def test_rewrite_result_schema():
 
 
 def test_rewrite_report_schema():
-    from src.agents.rewriter import RewriteReport
+    from src.schemas import RewriteReport
     report = RewriteReport(
         article_id="test_001",
         model="mistral",
