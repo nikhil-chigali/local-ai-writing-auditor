@@ -673,7 +673,7 @@ wheels = [
 [[package]]
 name = "local-ai-writing-auditor"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "instructor" },
     { name = "langfuse" },
