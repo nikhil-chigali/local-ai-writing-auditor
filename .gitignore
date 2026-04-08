@@ -27,3 +27,8 @@ docs/superpowers/
 
 # Git worktrees
 .worktrees/
+
+# Core Review Graph
+.code-review-graph
+.mcp.json
+.coverage
