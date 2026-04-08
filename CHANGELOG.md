@@ -85,6 +85,78 @@ Architectural decisions, tradeoffs, and design changes — for portfolio review 
 
 ---
 
+## [2026-04-05] — Schema classes extracted to src/schemas/ package
+
+**Decision:** Move all 9 Pydantic model classes (`SentenceHit`, `LexicalSummary`, `LexicalWordReport`, `SubAgentFinding`, `SubAgentReport`, `FlaggedSentence`, `AuditReport`, `RewriteResult`, `RewriteReport`) from `src/agents/auditor.py` and `src/agents/rewriter.py` into a dedicated `src/schemas/` package.
+**Alternatives considered:** Leave schemas co-located with the agent that "owns" them; move all to a single flat `schemas.py`.
+**Rationale:** Agents and detectors were mutually importing from `src.agents.auditor` — a detector importing from an agent module is a layering violation. The schemas are shared data contracts, not agent logic. A dedicated package makes imports unambiguous and enables Project #4 (LoRA fine-tuning) to import labels without pulling in agent dependencies.
+**Tradeoffs:** One more package to navigate. The `src.agents.auditor` public surface shrinks — callers that imported schemas directly from it still work (re-exported at module level) but should migrate to `src.schemas`.
+
+---
+
+## [2026-04-07] — instructor.from_provider over from_openai for Ollama
+
+**Decision:** Replace `instructor.from_openai(OpenAI(base_url="http://localhost:11434/v1"))` with `instructor.from_provider(f"ollama/{model}", mode=instructor.Mode.JSON)` across all 5 LLM callers.
+**Alternatives considered:** `from_openai` with `mode=instructor.Mode.JSON` (Option A — documented but broken in practice for Ollama).
+**Rationale:** `from_openai` without `Mode.JSON` defaults to tool-calling mode, which Ollama does not support. `from_provider` is the canonical Ollama integration path and was confirmed working. Also moves client instantiation from `_call_llm` (recreated per call) to `__init__` (created once), eliminating unnecessary object churn.
+**Tradeoffs:** `from_provider` bakes the model name into the client — changing model at runtime requires a new client. Acceptable because model is set once at agent init.
+
+---
+
+## [2026-04-07] — Explicit JSON format hint in detector prompts
+
+**Decision:** Add `Return JSON directly — do not wrap in any outer key: {"findings": [...]}` to the end of all 4 LLM detector prompts.
+**Alternatives considered:** Overriding the Pydantic schema title via `model_config`; using `Mode.JSON_SCHEMA`.
+**Rationale:** Mistral reads the JSON schema title (`_FindingsList`) that instructor embeds in the system message and uses it as a wrapper key around the response object. instructor then fails to validate `{"_FindingsList": {"findings": [...]}}` as `_FindingsList`. An explicit format instruction in the user prompt directly overrides this behaviour without requiring schema changes.
+**Tradeoffs:** Prompt is slightly longer. If the class is renamed the hint still works (it references the field name, not the class name).
+
+---
+
+## [2026-04-07] — LANGFUSE_TRACING gate for env propagation
+
+**Decision:** Add a `langfuse_tracing: bool = False` field to `Settings`. Langfuse keys are only propagated to `os.environ` (via `model_post_init`) when this flag is `True`.
+**Alternatives considered:** Always propagate keys; propagate only when keys are non-empty.
+**Rationale:** Langfuse SDK reads `os.environ` directly, not the settings object. Without propagation the SDK silently fails to authenticate. Gating behind a flag gives developers a single on/off switch without needing to remove keys from `.env`. Also prevents accidental tracing during pytest runs — `conftest.py` sets `LANGFUSE_TRACING=false` before any test runs.
+**Tradeoffs:** One extra env var to document. Default `False` means tracing is opt-in, which is safer.
+
+---
+
+## [2026-04-07] — setuptools build-system for editable install
+
+**Decision:** Add `[build-system]` and `[tool.setuptools.packages.find] where = ["."]` to `pyproject.toml`.
+**Alternatives considered:** `sys.path` manipulation in entry points; `where = ["src"]` (would break `from src.agents...` imports).
+**Rationale:** Streamlit adds the script directory (`src/ui/`) to `sys.path`, not the project root. Without an editable install, `src` only resolves when the CWD is the project root — it breaks at runtime when Streamlit launches. Adding a build-system causes `uv sync` to install the project itself, making `src` importable regardless of CWD.
+**Tradeoffs:** `where = ["."]` exposes the top-level `src/` as a package rather than its sub-packages individually. Callers continue to use `from src.agents...` — no import path changes needed.
+
+---
+
+## [2026-04-07] — RewriterAgent implementation
+
+**Decision:** RewriterAgent processes each `FlaggedSentence` individually (one LLM call per sentence), wraps the response in `_RewriteResultWrapper` to handle single-object schema enforcement, then string-substitutes rewrites into the original text.
+**Alternatives considered:** Batch all flagged sentences in one LLM call; use a streaming rewrite.
+**Rationale:** Per-sentence calls keep prompts small and focused, improving rewrite quality on smaller models. Batching risks one malformed sentence poisoning the entire response. The wrapper class is needed because instructor requires a Pydantic model at the top level — `RewriteResult` alone works but wrapping isolates the extraction cleanly.
+**Tradeoffs:** N LLM calls for N flagged sentences — latency scales linearly. Accepted for Phase 1; batching deferred.
+
+---
+
+## [2026-04-07] — CLI uses Mode enum for --mode flag validation
+
+**Decision:** Define a `Mode(str, enum.Enum)` with `rewrite` and `detect_only = "detect-only"` and type the `--mode` Typer argument with it.
+**Alternatives considered:** Accept raw string, validate manually inside the command.
+**Rationale:** Typer renders enum members as choices in `--help` and rejects invalid values before the command body runs. `detect-only` (hyphen) is the user-facing value; Python name uses underscore to remain a valid identifier.
+**Tradeoffs:** None — this is the idiomatic Typer pattern.
+
+---
+
+## [2026-04-07] — Langfuse tracing disabled during pytest via conftest.py
+
+**Decision:** Create `conftest.py` at project root that sets `os.environ["LANGFUSE_TRACING"] = "false"` before any test runs.
+**Alternatives considered:** (A) disable tracing in conftest (chosen); (B) tag test traces with `session=test`; (C) spin up a local Langfuse instance for test traces.
+**Rationale:** Test runs produce no meaningful traces — mocked LLM calls have no latency or token data. Polluting the Langfuse dashboard with test noise makes it harder to spot real production anomalies. Option A is the simplest and keeps the dashboard clean.
+**Tradeoffs:** If integration tests against a real Ollama instance are added later, traces won't be captured. Acceptable — integration tests would need their own trace tagging strategy regardless.
+
+---
+
 ## [2026-04-04] — Deferred Phase 2 patterns
 
 **Decision:** The following patterns are not implemented in Phase 1: sentence/paragraph length uniformity (per-sentence), bullet/header density, vague attribution, copula avoidance.
