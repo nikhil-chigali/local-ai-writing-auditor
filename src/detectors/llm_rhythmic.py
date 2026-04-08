@@ -2,7 +2,6 @@ import json
 
 import instructor
 from langfuse import observe
-from openai import OpenAI
 from pydantic import BaseModel
 
 from src.schemas import SubAgentFinding, SubAgentReport
@@ -35,6 +34,9 @@ Sentences to analyze (sentence_id → text):
 Return findings ONLY for sentences that clearly exhibit these patterns.
 If no patterns are found, return an empty findings list.
 For severity: "high" = clear violation, "medium" = likely violation, "low" = possible.
+
+Return JSON directly — do not wrap in any outer key:
+{{"findings": [...]}}
 """
 
 
@@ -43,13 +45,11 @@ class LLMRhythmicAgent:
 
     def __init__(self, model: str) -> None:
         self.model = model
+        self.client = instructor.from_provider(f"ollama/{model}", mode=instructor.Mode.JSON)
 
     def _call_llm(self, sentences: dict[str, str]) -> list[SubAgentFinding]:
-        client = instructor.from_openai(
-            OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
-        )
         prompt = _PROMPT.format(sentences_json=json.dumps(sentences, indent=2))
-        result = client.chat.completions.create(
+        result = self.client.chat.completions.create(
             model=self.model,
             response_model=_FindingsList,
             messages=[{"role": "user", "content": prompt}],
