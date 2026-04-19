@@ -8,7 +8,6 @@
 ![Streamlit](https://img.shields.io/badge/Streamlit-UI-FF4B4B?logo=streamlit)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tests](https://img.shields.io/badge/tests-49%20passing-brightgreen)
-![Portfolio](https://img.shields.io/badge/Portfolio-Project%20%232%20of%205-blueviolet)
 
 > Privacy-first, Ollama-powered two-agent pipeline that detects and rewrites AI writing tells.
 > No cloud APIs. No data leaving your machine.
@@ -19,7 +18,7 @@
 
 AI-generated writing has a fingerprint — a set of structural, lexical, tonal, and rhythmic patterns that trained readers immediately recognise. This tool audits any article for those patterns and surgically rewrites the flagged sentences, preserving the author's voice and intent.
 
-The architecture is a two-agent, two-pass pipeline running entirely on local models via Ollama. It is **Portfolio Project #2 of 5** in a GenAI Engineer portfolio series, designed to demonstrate local SLM deployment, agentic pipeline design, structured JSON output enforcement, and LLM evaluation infrastructure.
+The architecture is a two-agent, two-pass pipeline running entirely on local models via Ollama.
 
 > Inspired by [github.com/conorbronsdon/avoid-ai-writing](https://github.com/conorbronsdon/avoid-ai-writing) (MIT). The original contribution of this project is the local Ollama agent architecture — not the word list.
 
@@ -115,16 +114,16 @@ Mistral is used as the LLM Judge for rewrite quality scoring — keeping the ful
 |-----------|--------|-----------|
 | Language | Python 3.12 | Strong typing, ecosystem depth |
 | Ollama interface | `instructor.from_provider` | Structured output with schema-enforced retries |
-| Data validation | Pydantic v2 | Schema-locked sentence labels for Project #4 reuse |
+| Data validation | Pydantic v2 | Schema-locked sentence labels, strong typing |
 | Observability | Langfuse `@observe()` | Framework-agnostic tracing, self-hostable |
 | Dependency management | `uv` | Fast, modern toolchain |
 | Config | pydantic-settings + `.env` | Model names and thresholds as config, not hardcode |
 | Logging | loguru | Structured logs, zero boilerplate |
 | UI | Streamlit | Two-panel flagged/rewrite display |
 | CLI | Typer | `--mode detect-only` / `rewrite`, `--output-json` |
-| Metrics | Custom Python + sklearn | Demonstrates eval infra knowledge |
+| Metrics | Custom Python + sklearn | Full control over eval logic |
 
-**Why bare-metal SDK over LangChain:** LangChain abstracts prompt construction, retry logic, and JSON parsing — exactly the parts that demonstrate engineering depth. Bare-metal keeps everything explicit and visible. LangChain's Ollama integration also lags behind the native SDK.
+**Why bare-metal SDK over LangChain:** LangChain abstracts prompt construction, retry logic, and JSON parsing — exactly the parts worth understanding and controlling. Bare-metal keeps everything explicit and visible. LangChain's Ollama integration also lags behind the native SDK.
 
 **Why Langfuse over LangSmith:** Langfuse is framework-agnostic — one `@observe()` decorator, no framework coupling. Self-hostable. Same capabilities (prompt versioning, per-model latency, token dashboards) without requiring LangChain.
 
@@ -265,7 +264,7 @@ Each run returns four sections:
 ### Completed
 
 - [x] **Scaffold** — all Pydantic schemas defined and locked (`FlaggedSentence`, `AuditReport`, `RewriteReport`, `RewriteResult`)
-- [x] **Schema package** — extracted to `src/schemas/` (eliminates circular imports, enables Project #4 reuse without pulling in agent dependencies)
+- [x] **Schema package** — extracted to `src/schemas/` (eliminates circular imports, clean separation of data contracts from agent logic)
 - [x] **PythonLexicalDetector** — Tier 1/2/3 word detection via pure Python (no LLM)
 - [x] **Four LLM sub-agents** — lexical, structural, tonal, rhythmic pattern detection via Ollama + `instructor`
 - [x] **AuditorAgent** — Python orchestrator; merges sub-agent outputs into `AuditReport`, computes rewrite/patch verdict
@@ -280,9 +279,8 @@ Each run returns four sections:
 - [ ] **Gold evaluation dataset** — 30 labeled articles (10 human / 10 AI / 10 human-edited-AI)
 - [ ] **Evaluation harness** — precision, recall, F1 per category; LLM-as-judge rewrite quality scorer
 - [ ] **Three-model benchmark** — Llama 3.2 3B vs Mistral 7B vs Phi-4 14B; benchmark CSV + rich table output
-- [ ] **Synthetic sentence generator** — expands the gold dataset for Project #4 LoRA fine-tuning
+- [ ] **Synthetic sentence generator** — expands the gold dataset for LoRA fine-tuning experiments
 - [ ] **README enhancements** — architecture diagram, model comparison table, Langfuse trace screenshot, demo GIF
-- [ ] **Project #4 bridge** — export gold dataset and baseline metrics for LoRA fine-tuning
 
 ---
 
@@ -298,7 +296,7 @@ Mistral reads the JSON schema title (the Python class name) that instructor embe
 
 ### Schemas extracted to `src/schemas/`
 
-Detectors and agents were circularly importing from `src.agents.auditor`. Schemas are shared data contracts, not agent logic. The dedicated package eliminates the layering violation and allows Project #4 to import sentence labels without pulling in agent dependencies.
+Detectors and agents were circularly importing from `src.agents.auditor`. Schemas are shared data contracts, not agent logic. The dedicated package eliminates the layering violation and keeps imports unambiguous across the codebase.
 
 ### Lexical detection is pure Python, not LLM
 
@@ -318,27 +316,6 @@ The Rewriter processes each `FlaggedSentence` individually — one LLM call per 
 
 ---
 
-## Project #4 Bridge — LoRA Fine-Tuning
-
-This project is designed so its outputs feed directly into Portfolio Project #4.
-
-**The narrative:**
-> *Project #2: Agentic detection via prompt engineering. ~71% F1, ~340ms/article.*
-> *Project #4: Same eval set, LoRA-fine-tuned sentence classifier. ~89% F1, ~40ms/article.*
-> Same data. Measurable improvement. Documented tradeoffs.
-
-**Commitments made here to enable Project #4:**
-
-| Commitment | Why |
-|------------|-----|
-| `FlaggedSentence` schema locked — no field name or type changes after labeling | Schema change = full re-label of 30 articles |
-| Precision/recall/F1 measured per category | These become Project #4's improvement baseline |
-| Synthetic sentence generator committed (unused here) | Provides training data expansion path for fine-tuning |
-
-**Two paradigms, not a replacement:** Prompt-based detection is flexible, zero training cost, interpretable, and slower. A fine-tuned classifier is faster, more consistent, higher F1 — but narrow and requires labeled data. Project #4 benchmarks both on the same eval set.
-
----
-
 ## Credits
 
 Tell taxonomy (109-entry word replacement table, 3-tier system, 4 pattern categories):
@@ -346,14 +323,3 @@ Tell taxonomy (109-entry word replacement table, 3-tier system, 4 pattern catego
 
 The original contribution of this project is the local Ollama agent architecture, two-pass agentic pipeline, structured JSON output layer, gold evaluation dataset, multi-model benchmarking harness, and Streamlit/CLI interface.
 
----
-
-## Portfolio Context
-
-| # | Project | Core Skill Demonstrated |
-|---|---------|------------------------|
-| 1 | Production RAG | Retrieval-augmented generation, vector DBs |
-| **2** | **Local AI Writing Auditor (this)** | **Local SLM deployment, agentic pipelines, evals** |
-| 3 | LLM Observability | Tracing, logging, monitoring LLM systems |
-| 4 | LoRA Fine-Tuning | Fine-tune classifier on Project #2 gold dataset |
-| 5 | Real-Time Multimodal Voice | Streaming, multimodal, latency-sensitive systems |
